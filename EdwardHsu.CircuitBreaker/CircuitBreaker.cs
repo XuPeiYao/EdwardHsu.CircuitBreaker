@@ -10,22 +10,31 @@ using EdwardHsu.CircuitBreaker.Internal;
 
 namespace EdwardHsu.CircuitBreaker
 {
+    /// <summary>
+    /// Circuit breaker
+    /// </summary>
     public class CircuitBreaker : ICircuitBreaker, IDisposable , IAsyncDisposable
     {
-
         private readonly IFuse _fuse; 
         private CircuitBreakerStatus _status;
         private object _monitorObject;
         private MethodInfo _monitorMethod;
         private Harmony _harmony;
 
+        /// <summary>
+        /// Constructor for CircuitBreaker
+        /// </summary>
+        /// <param name="fuse">Breaker fuse, which is the circuit breaker's internal state</param>
+        /// <param name="monitorMethodSelector">Expression selector for method to monitor</param>
+        /// <param name="initialStatus">Default status of the circuit breaker</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public CircuitBreaker(
             IFuse fuse,
             Expression<Action> monitorMethodSelector,
-            CircuitBreakerStatus defaultStatus = CircuitBreakerStatus.On)
+            CircuitBreakerStatus initialStatus = CircuitBreakerStatus.On)
         {
             _fuse = fuse;
-            InitialFuseHook(defaultStatus);
+            InitialFuseHook(initialStatus);
 
             if (monitorMethodSelector.Body is MethodCallExpression mce)
             {
@@ -37,13 +46,20 @@ namespace EdwardHsu.CircuitBreaker
             }
         }
 
+        /// <summary>
+        /// Constructor for CircuitBreaker
+        /// </summary>
+        /// <param name="fuse">Breaker fuse, which is the circuit breaker's internal state</param>
+        /// <param name="monitorMethodSelector">Expression selector for method to monitor</param>
+        /// <param name="initialStatus">Default status of the circuit breaker</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public CircuitBreaker(
             IFuse fuse,
             Expression<Func<object>> monitorMethodSelector,
-            CircuitBreakerStatus defaultStatus = CircuitBreakerStatus.On)
+            CircuitBreakerStatus initialStatus = CircuitBreakerStatus.On)
         {
             _fuse = fuse;
-            InitialFuseHook(defaultStatus);
+            InitialFuseHook(initialStatus);
 
             if (monitorMethodSelector.Body is MethodCallExpression mce)
             {
@@ -55,7 +71,7 @@ namespace EdwardHsu.CircuitBreaker
             }
         }
 
-        private void InitialFuseHook(CircuitBreakerStatus defaultStatus)
+        private void InitialFuseHook(CircuitBreakerStatus initialStatus)
         {
             _fuse.StatusChanged += (f) =>
             {
@@ -129,12 +145,25 @@ namespace EdwardHsu.CircuitBreaker
             _harmony.Patch(_monitorMethod, patchMethod);
         }
         
+        /// <summary>
+        /// Circuit breaker status
+        /// </summary>
         public CircuitBreakerStatus Status => _status;
-
+        
+        /// <summary>
+        /// Circuit breaker fuse
+        /// </summary>
         public IFuse Fuse => _fuse;
 
+
+        /// <summary>
+        /// Event for status changed
+        /// </summary>
         public event Action<ICircuitBreaker> StatusChanged;
 
+        /// <summary>
+        /// Turn on the circuit breaker
+        /// </summary>
         public void On()
         {
             if (_status == CircuitBreakerStatus.On)
@@ -145,6 +174,9 @@ namespace EdwardHsu.CircuitBreaker
             _fuse.Reset();
         }
 
+        /// <summary>
+        /// Turn off the circuit breaker
+        /// </summary>
         public void Off()
         {
             if (_status == CircuitBreakerStatus.Off ||
@@ -156,6 +188,9 @@ namespace EdwardHsu.CircuitBreaker
             _fuse.Trip();
         }
 
+        /// <summary>
+        /// Dispose the circuit breaker
+        /// </summary>
         public void Dispose()
         {
             if (_harmony != null)
@@ -167,6 +202,10 @@ namespace EdwardHsu.CircuitBreaker
             PatchFactory.Unregister(this);
         }
 
+        /// <summary>
+        /// Dispose the circuit breaker
+        /// </summary>
+        /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
             if (_harmony != null)

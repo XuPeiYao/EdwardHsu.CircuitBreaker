@@ -7,13 +7,20 @@ using EdwardHsu.CircuitBreaker.Internal;
 
 namespace EdwardHsu.CircuitBreaker.Fuses
 {
+    /// <summary>
+    /// Limits the number of executions within a sliding time window at any given time
+    /// </summary>
     public class TimeSlidingWindowCountFuse : IFuse
     {
         private FuseStatus _status;
         private readonly int _threshold;
         private TtlBuffer<byte> _buffer;
 
-
+        /// <summary>
+        /// Constructor for TimeSlidingWindowCountFuse
+        /// </summary>
+        /// <param name="threshold">Limit of executions</param>
+        /// <param name="duration">Time window</param>
         public TimeSlidingWindowCountFuse(int threshold, TimeSpan duration)
         {
             Status = FuseStatus.Normal;
@@ -22,7 +29,10 @@ namespace EdwardHsu.CircuitBreaker.Fuses
 
             _buffer = new TtlBuffer<byte>(duration);
         }
-
+        
+        /// <summary>
+        /// Fuse status
+        /// </summary>
         public FuseStatus Status
         {
             get
@@ -39,10 +49,16 @@ namespace EdwardHsu.CircuitBreaker.Fuses
             }
         }
 
+        /// <summary>
+        /// Event for status changed
+        /// </summary>
         public event Action<IFuse>? StatusChanged;
 
-        
-
+        /// <summary>
+        /// Invoke the fuse
+        /// </summary>
+        /// <param name="arguments">arguments</param>
+        /// <exception cref="InvalidOperationException"></exception>
         public void Invoke(object[] arguments)
         {
             if (Status == FuseStatus.Tripped || 
@@ -63,6 +79,9 @@ namespace EdwardHsu.CircuitBreaker.Fuses
             }
         }
 
+        /// <summary>
+        /// Trip the fuse
+        /// </summary>
         public void Trip()
         {
             _buffer.Clear();
@@ -70,6 +89,9 @@ namespace EdwardHsu.CircuitBreaker.Fuses
             Status = FuseStatus.ManuallyTripped;
         }
 
+        /// <summary>
+        /// Reset the fuse
+        /// </summary>
         public void Reset()
         {
             _buffer.Clear();
