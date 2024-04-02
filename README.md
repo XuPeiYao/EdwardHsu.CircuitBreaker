@@ -1,6 +1,6 @@
 # EdwardHsu.CircuitBreaker
 
-CircuitBreaker is a C# library that provides a circuit breaker pattern implementation for methods. It is designed to prevent a method from being executed too frequently or too intensively, which can lead to resource exhaustion or other issues.
+CircuitBreaker is a .NET library that provides a circuit breaker pattern implementation for methods. It is designed to prevent a method from being executed too frequently or too intensively, which can lead to resource exhaustion or other issues.
 
 ## Features
 
