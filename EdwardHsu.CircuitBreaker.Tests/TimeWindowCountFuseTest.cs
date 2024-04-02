@@ -23,7 +23,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
             var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod1());
             
             var startTime = DateTime.UtcNow;
-            Assert.Throws<InvalidOperationException>(() =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async() =>
             {
                 var countField = typeof(TimeWindowCountFuse).GetField("_count", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic);
 
@@ -34,7 +34,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
                     var count = countField.GetValue(breaker.Fuse);
                     Assert.Equal((long)i+1, count);
 
-                    Task.Delay(TimeSpan.FromMilliseconds(5)).Wait();
+                    await Task.Delay(TimeSpan.FromMilliseconds(5));
                 }
             });
             

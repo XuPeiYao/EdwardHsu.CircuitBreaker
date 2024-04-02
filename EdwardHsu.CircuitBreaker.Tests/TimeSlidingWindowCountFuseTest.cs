@@ -23,12 +23,12 @@ namespace EdwardHsu.CircuitBreaker.Tests
             var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod1());
             
             var startTime = DateTime.UtcNow;
-            Assert.Throws<InvalidOperationException>(() =>
+            await Assert.ThrowsAsync<InvalidOperationException>(async() =>
             {
                 foreach (var i in Enumerable.Range(0, 1000))
                 {
                     ExampleStaticMethod1();
-                    Task.Delay(TimeSpan.FromMilliseconds(5)).Wait();
+                    await Task.Delay(TimeSpan.FromMilliseconds(5));
                 }
             });
             
