@@ -11,22 +11,16 @@ namespace EdwardHsu.CircuitBreaker
     {
         private static List<(ICircuitBreaker breaker, object monitorObj, MethodInfo monitorMethod)> _patchTargets = new List<(ICircuitBreaker breaker, object monitorObj, MethodInfo monitorMethod)>();
 
-        public static bool IsRegistered(ICircuitBreaker breaker, object patchTarget, MethodInfo monitorMethod)
-        {
-            lock (_patchTargets)
-            {
-                return _patchTargets.Any(x => x.breaker == breaker && x.monitorObj == patchTarget && x.monitorMethod == monitorMethod);
-            }
-        }
-
         public static void Register(ICircuitBreaker breaker, object patchTarget, MethodInfo monitorMethod)
         {
             lock (_patchTargets)
             {
+#if !DEBUG
                 if (_patchTargets.Any(x => x.breaker == breaker))
                 {
                     throw new InvalidOperationException("Breaker already registered");
                 }
+#endif
 
                 _patchTargets.Add((breaker, patchTarget, monitorMethod));
             }
@@ -36,10 +30,12 @@ namespace EdwardHsu.CircuitBreaker
         {
             lock (_patchTargets)
             {
+#if !DEBUG
                 if (_patchTargets.Any(x => x.breaker == breaker) == false)
                 {
                     throw new InvalidOperationException("Breaker not registered");
                 }
+#endif
 
                 var target = _patchTargets.FirstOrDefault(x => x.breaker == breaker);
 

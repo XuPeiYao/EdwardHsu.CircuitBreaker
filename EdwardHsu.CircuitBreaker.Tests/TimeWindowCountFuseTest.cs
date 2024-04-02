@@ -108,7 +108,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
         }
 
 
-
+        
         [Fact]
         public void TimeWindowCount_Method1()
         {
