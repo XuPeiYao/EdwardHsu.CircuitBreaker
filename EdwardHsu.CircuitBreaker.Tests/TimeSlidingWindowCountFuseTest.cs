@@ -17,10 +17,10 @@ namespace EdwardHsu.CircuitBreaker.Tests
         }
 
         [Fact]
-        public void TimeSlidingWindowCount_StaticMethod1()
+        public async Task TimeSlidingWindowCount_StaticMethod1()
         {
             var fuse = new TimeSlidingWindowCountFuse(10, TimeSpan.FromSeconds(1));
-            using var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod1());
+            var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod1());
             
             var startTime = DateTime.UtcNow;
             Assert.Throws<InvalidOperationException>(() =>
@@ -37,17 +37,21 @@ namespace EdwardHsu.CircuitBreaker.Tests
             Assert.Equal(CircuitBreakerStatus.TrippedOff, breaker.Status);
 
             breaker.On();
+            breaker.On();
 
             Assert.Equal(CircuitBreakerStatus.On, breaker.Status);
 
             ExampleStaticMethod1();
 
             breaker.Off();
+            breaker.Off();
 
             Assert.Throws<InvalidOperationException>(() =>
             {
                 ExampleStaticMethod1();
             });
+
+            await breaker.DisposeAsync();
         }
 
 
@@ -60,7 +64,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
         public void TimeSlidingWindowCount_StaticMethod2()
         {
             var fuse = new TimeSlidingWindowCountFuse(10, TimeSpan.FromSeconds(1));
-            var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod2());
+            using var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod2());
 
             var startTime = DateTime.UtcNow;
             Assert.Throws<InvalidOperationException>(() =>
@@ -97,7 +101,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
         {
             var testInstance = new TestModel();
             var fuse = new TimeSlidingWindowCountFuse(10, TimeSpan.FromSeconds(1));
-            var breaker = new CircuitBreaker(fuse, () => testInstance.Method1(""));
+            using var breaker = new CircuitBreaker(fuse, () => testInstance.Method1(""));
 
             var startTime = DateTime.UtcNow;
             int count = 0;
@@ -134,7 +138,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
         {
             var testInstance = new TestModel();
             var fuse = new TimeSlidingWindowCountFuse(10, TimeSpan.FromSeconds(1));
-            var breaker = new CircuitBreaker(fuse, () => testInstance.Method2(""));
+            using var breaker = new CircuitBreaker(fuse, () => testInstance.Method2(""));
 
             var startTime = DateTime.UtcNow;
             Assert.Throws<InvalidOperationException>(() =>
