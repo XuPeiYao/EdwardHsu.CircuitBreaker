@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using EH.CircuitBreaker.Fuses;
-using EH.CircuitBreaker.Tests.Models;
+using EdwardHsu.CircuitBreaker.Fuses;
+using EdwardHsu.CircuitBreaker.Tests.Models;
 using HarmonyLib;
 
 using static System.Net.Mime.MediaTypeNames;
 
-namespace EH.CircuitBreaker.Tests
+namespace EdwardHsu.CircuitBreaker.Tests
 {
     public class TimeSlidingWindowCountFuseTest
     {

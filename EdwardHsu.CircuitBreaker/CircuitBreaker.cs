@@ -5,10 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
-using EH.CircuitBreaker.Fuses;
-using EH.CircuitBreaker.Internal;
+using EdwardHsu.CircuitBreaker.Fuses;
+using EdwardHsu.CircuitBreaker.Internal;
 
-namespace EH.CircuitBreaker
+namespace EdwardHsu.CircuitBreaker
 {
     public class CircuitBreaker : ICircuitBreaker, IDisposable , IAsyncDisposable
     {
@@ -120,7 +120,7 @@ namespace EH.CircuitBreaker
 
             PatchFactory.Register(this, _monitorObject, _monitorMethod);
 
-            _harmony = new Harmony($"EH.CircuitBreaker.{this.GetHashCode()}");
+            _harmony = new Harmony($"EdwardHsu.CircuitBreaker.{this.GetHashCode()}");
 
             var prefix = typeof(PatchFactory).GetMethod(nameof(PatchFactory.Prefix), BindingFlags.Static | BindingFlags.Public);
 

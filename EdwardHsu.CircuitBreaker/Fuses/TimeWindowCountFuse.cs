@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EH.CircuitBreaker.Fuses
+namespace EdwardHsu.CircuitBreaker.Fuses
 {
     public class TimeWindowCountFuse: IFuse, IDisposable, IAsyncDisposable
     {

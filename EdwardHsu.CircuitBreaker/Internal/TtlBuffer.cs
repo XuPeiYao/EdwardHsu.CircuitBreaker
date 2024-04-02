@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EH.CircuitBreaker.Internal
+namespace EdwardHsu.CircuitBreaker.Internal
 {
     internal class TtlBuffer<T>
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EH.CircuitBreaker.Fuses;
+using EdwardHsu.CircuitBreaker.Fuses;
 
-namespace EH.CircuitBreaker
+namespace EdwardHsu.CircuitBreaker
 {
     public interface IFuse
     {

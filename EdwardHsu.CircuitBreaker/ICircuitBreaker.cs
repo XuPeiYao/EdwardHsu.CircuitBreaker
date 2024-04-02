@@ -5,7 +5,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EH.CircuitBreaker
+namespace EdwardHsu.CircuitBreaker
 {
     public interface ICircuitBreaker
     {

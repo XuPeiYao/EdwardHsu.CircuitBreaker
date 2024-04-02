@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EH.CircuitBreaker.Internal;
+using EdwardHsu.CircuitBreaker.Internal;
 
-namespace EH.CircuitBreaker.Fuses
+namespace EdwardHsu.CircuitBreaker.Fuses
 {
     public class TimeSlidingWindowCountFuse : IFuse
     {

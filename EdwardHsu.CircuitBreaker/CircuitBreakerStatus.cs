@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EH.CircuitBreaker
+namespace EdwardHsu.CircuitBreaker
 {
     public enum CircuitBreakerStatus
     {

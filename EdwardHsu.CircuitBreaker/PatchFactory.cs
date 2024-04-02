@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EH.CircuitBreaker
+namespace EdwardHsu.CircuitBreaker
 {
     internal class PatchFactory
     {
