@@ -1,4 +1,10 @@
-# EdwardHsu.CircuitBreaker
+EdwardHsu.CircuitBreaker
+=====
+[![Unit Test](https://github.com/XuPeiYao/EdwardHsu.CircuitBreaker/actions/workflows/unit-test.yaml/badge.svg)](https://github.com/XuPeiYao/EdwardHsu.CircuitBreaker/actions/workflows/unit-test.yaml)
+[![codecov](https://codecov.io/gh/XuPeiYao/EdwardHsu.CircuitBreaker/graph/badge.svg?token=IY5K44AVW1)](https://codecov.io/gh/XuPeiYao/EdwardHsu.CircuitBreaker)
+[![NuGet Version](https://img.shields.io/nuget/v/EdwardHsu.CircuitBreaker.svg)](https://www.nuget.org/packages/EdwardHsu.CircuitBreaker/)
+[![NuGet Download](https://img.shields.io/nuget/dt/EdwardHsu.CircuitBreaker.svg)](https://www.nuget.org/packages/EdwardHsu.CircuitBreaker/)
+[![Github license](https://img.shields.io/github/license/XuPeiYao/EdwardHsu.CircuitBreaker.svg)](https://www.nuget.org/packages/EdwardHsu.CircuitBreaker/)
 
 CircuitBreaker is a .NET library that provides a circuit breaker pattern implementation for methods. It is designed to prevent a method from being executed too frequently or too intensively, which can lead to resource exhaustion or other issues.
 
