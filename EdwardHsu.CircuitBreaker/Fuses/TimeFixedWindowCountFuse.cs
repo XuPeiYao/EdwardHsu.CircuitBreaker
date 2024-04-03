@@ -1,40 +1,44 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EdwardHsu.CircuitBreaker.Internal;
 
 namespace EdwardHsu.CircuitBreaker.Fuses
 {
     /// <summary>
     /// Limits the number of executions within a fixed time window
     /// </summary>
-    public class TimeWindowCountFuse: IFuse, IDisposable, IAsyncDisposable
+    public class TimeFixedWindowCountFuse : IFuse
     {
         private FuseStatus _status;
         private readonly int _threshold;
         private readonly TimeSpan _duration;
-        private readonly Timer _timer;
-        private long _count;
+        private DateTime _currentWindowStartTime;
+        private ConcurrentQueue<DateTime> _queue;
 
         /// <summary>
-        /// Constructor for TimeWindowCountFuse
+        /// Constructor for TimeFixedWindowCountFuse
         /// </summary>
         /// <param name="threshold">Limit of executions</param>
         /// <param name="duration">Time window</param>
-        public TimeWindowCountFuse(int threshold, TimeSpan duration)
+        /// <param name="firstWindowStartTime">Start time of the first window</param>
+        public TimeFixedWindowCountFuse(int threshold, TimeSpan duration, DateTime? firstWindowStartTime = null)
         {
-            _status = FuseStatus.Initial;
+            Status = FuseStatus.Normal;
 
-            _threshold = threshold;
             _duration = duration;
 
-            _timer = new Timer((state) =>
-            {
-                CheckThreshold(state, true);
-            }, null, Timeout.Infinite, Timeout.Infinite);
-        }
+            _threshold = threshold;
 
+            _currentWindowStartTime = firstWindowStartTime ?? DateTime.UtcNow;
+
+            _queue = new ConcurrentQueue<DateTime>();
+        }
+        
         /// <summary>
         /// Fuse status
         /// </summary>
@@ -59,24 +63,6 @@ namespace EdwardHsu.CircuitBreaker.Fuses
         /// </summary>
         public event Action<IFuse>? StatusChanged;
 
-        private void CheckThreshold(object? state, bool reset = true)
-        {
-            lock (this)
-            {
-                if (_count >= _threshold)
-                {
-                    Status = FuseStatus.Tripped;
-
-                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
-
-                if (reset)
-                {
-                    _count = 0;
-                }
-            }
-        }
-
         /// <summary>
         /// Invoke the fuse
         /// </summary>
@@ -89,17 +75,39 @@ namespace EdwardHsu.CircuitBreaker.Fuses
             {
                 throw new InvalidOperationException($"Fuse is tripped");
             }
-            else if (Status == FuseStatus.Initial)
+
+            var now = DateTime.UtcNow;
+
+            _queue.Enqueue(now);
+
+            if (now - _currentWindowStartTime >= _duration)
             {
-                Status = FuseStatus.Normal;
-                _timer.Change(_duration, _duration);
-            }
-            lock (this)
-            {
-                _count++;
+                _currentWindowStartTime = _currentWindowStartTime + _duration;
             }
 
-            CheckThreshold(this, false);
+            while (_queue.Count > 0)
+            {
+                if (_queue.TryPeek(out var item))
+                {
+                    if (item < _currentWindowStartTime)
+                    {
+                        _queue.TryDequeue(out _);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (_queue.Count >= _threshold)
+            {
+                Status = FuseStatus.Tripped;
+
+                _queue.Clear();
+
+                throw new InvalidOperationException($"Fuse is tripped");
+            }
         }
 
         /// <summary>
@@ -107,13 +115,9 @@ namespace EdwardHsu.CircuitBreaker.Fuses
         /// </summary>
         public void Trip()
         {
-            lock (this)
-            {
-                _count = 0;
-            }
+            _queue.Clear();
 
             Status = FuseStatus.ManuallyTripped;
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>
@@ -121,23 +125,9 @@ namespace EdwardHsu.CircuitBreaker.Fuses
         /// </summary>
         public void Reset()
         {
-            lock (this)
-            {
-                _count = 0;
-            }
+            _queue.Clear();
 
-            Status = FuseStatus.Initial;
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-
-        public void Dispose()
-        {
-            _timer.Dispose();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await _timer.DisposeAsync();
+            Status = FuseStatus.Normal;
         }
     }
 }

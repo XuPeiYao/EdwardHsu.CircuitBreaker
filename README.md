@@ -13,12 +13,12 @@ CircuitBreaker is a .NET library that provides a circuit breaker pattern impleme
 - Supports both instance and static methods
 - Provides different circuit breaker strategies:
     - `TimeSlidingWindowCountFuse`: Limits the number of executions within a sliding time window at any given time.
-    - `TimeWindowCountFuse`: Limits the number of executions within a fixed time window.
+    - `TimeFixedWindowCountFuse`: Limits the number of executions within a fixed time window.
 - Allows manual tripping and resetting of the circuit breaker
 
 ## Usage
 
-1. Create an instance of the desired circuit breaker strategy (e.g., `TimeSlidingWindowCountFuse` or `TimeWindowCountFuse`).
+1. Create an instance of the desired circuit breaker strategy (e.g., `TimeSlidingWindowCountFuse` or `TimeFixedWindowCountFuse`).
 2. Create an instance of `CircuitBreaker`, passing the fuse instance and a lambda expression that represents the method to be monitored.
 3. Use the `Status` property to check the current status of the circuit breaker.
 4. Call the `On()` method to reset the circuit breaker and allow the monitored method to be executed.
