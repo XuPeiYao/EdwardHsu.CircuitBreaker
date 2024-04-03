@@ -8,48 +8,48 @@ using System.Threading.Tasks;
 
 namespace EdwardHsu.CircuitBreaker.Internal
 {
-    public class TtlBuffer<T>
+    internal class TtlBuffer<T>
     {
         private TimeSpan _ttl;
-
-        private ConcurrentBag<(DateTime time, T obj)> _list = new ConcurrentBag<(DateTime time, T obj)>();
+        private ConcurrentQueue<(DateTime time, T obj)> _queue;
         
         public TtlBuffer(TimeSpan ttl)
         {
-            _list = new ConcurrentBag<(DateTime, T)>();
+            _queue = new ConcurrentQueue<(DateTime, T)>();
             _ttl = ttl;
         }
 
         public void Add(T obj)
         {
-            _list.Add((DateTime.UtcNow, obj));
+            _queue.Enqueue((DateTime.UtcNow, obj));
         }
 
         public IEnumerable<T> GetItems()
         {
             var now = DateTime.UtcNow;
-            var result = _list.Where(x => now - x.time < _ttl).Select(x => x.obj);
 
-            while(_list.Count > 0)
+            while (_queue.Count > 0)
             {
-                _list.TryPeek(out var item);
-
-                if (now - item.time >= _ttl)
+                if (_queue.TryPeek(out var item))
                 {
-                    _list.TryTake(out _);
-                }
-                else
-                {
-                    break;
+                    if (now - item.time >= _ttl)
+                    {
+                        _queue.TryDequeue(out _);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
-            return result.ToList().AsReadOnly();
+            return _queue.Select(x => x.obj)
+                .ToList().AsReadOnly();
         }
 
         public void Clear()
         {
-            _list = new ConcurrentBag<(DateTime, T)>();
+            _queue.Clear();
         }
     }
 }

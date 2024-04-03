@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,22 +8,30 @@ using System.Threading.Tasks;
 
 namespace EdwardHsu.CircuitBreaker
 {
-    internal class PatchFactory
+    public class PatchFactory
     {
-        private static List<(ICircuitBreaker breaker, object monitorObj, MethodInfo monitorMethod)> _patchTargets = new List<(ICircuitBreaker breaker, object monitorObj, MethodInfo monitorMethod)>();
+        private static ConcurrentDictionary<ICircuitBreaker, (object monitorObj, MethodInfo monitorMethod)> _patchTargets;
 
-        public static void Register(ICircuitBreaker breaker, object patchTarget, MethodInfo monitorMethod)
+        static PatchFactory()
+        {
+            _patchTargets = new ConcurrentDictionary<ICircuitBreaker, (object monitorObj, MethodInfo monitorMethod)>();
+        }
+
+        public static void Register(ICircuitBreaker breaker, object monitorObj, MethodInfo monitorMethod)
         {
             lock (_patchTargets)
             {
 #if !DEBUG
-                if (_patchTargets.Any(x => x.breaker == breaker))
+                if (_patchTargets.TryGetValue(breaker, out _))
                 {
                     throw new InvalidOperationException("Breaker already registered");
                 }
 #endif
 
-                _patchTargets.Add((breaker, patchTarget, monitorMethod));
+                if (_patchTargets.TryAdd(breaker, (monitorObj, monitorMethod)) == false)
+                {
+                    throw new InvalidOperationException("Failed to register breaker");
+                }
             }
         }
 
@@ -31,30 +40,27 @@ namespace EdwardHsu.CircuitBreaker
             lock (_patchTargets)
             {
 #if !DEBUG
-                if (_patchTargets.Any(x => x.breaker == breaker) == false)
+                if (_patchTargets.TryGetValue(breaker, out _) == false)
                 {
                     throw new InvalidOperationException("Breaker not registered");
                 }
 #endif
 
-                var target = _patchTargets.FirstOrDefault(x => x.breaker == breaker);
-
-                _patchTargets.Remove(target);
+                _patchTargets.Remove(breaker, out _);
             }
         }
 
         public static bool Prefix(object __instance, MethodInfo __originalMethod, object[] __args)
         {
-            var breakerMap = _patchTargets.Where(x => x.monitorObj == __instance && x.monitorMethod == __originalMethod).ToList();
+            var registedMonitors = _patchTargets.Where(x =>
+                    x.Value.monitorObj == __instance && x.Value.monitorMethod == __originalMethod)
+                .ToList();
 
-            if (breakerMap.Any() == false)
-            {
-                return true;
-            }
+            if (registedMonitors.Any() == false) return true;
 
-            foreach (var breakerPair in breakerMap)
+            foreach (var breakerPair in registedMonitors)
             {
-                breakerPair.breaker.Fuse.Invoke(__args);
+                breakerPair.Key.Fuse.Invoke(__args);
             }
 
             return true;
