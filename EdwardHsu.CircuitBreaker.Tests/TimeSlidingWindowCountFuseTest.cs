@@ -1,12 +1,5 @@
-using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
 using EdwardHsu.CircuitBreaker.Fuses;
-using EdwardHsu.CircuitBreaker.Internal;
 using EdwardHsu.CircuitBreaker.Tests.Models;
-using HarmonyLib;
-
-using static System.Net.Mime.MediaTypeNames;
 
 namespace EdwardHsu.CircuitBreaker.Tests
 {
