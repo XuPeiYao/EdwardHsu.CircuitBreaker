@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EdwardHsu.CircuitBreaker.Internal
 {
-    internal class TtlBuffer<T>
+    public class TtlBuffer<T>
     {
         private TimeSpan _ttl;
 

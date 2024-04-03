@@ -76,6 +76,8 @@ namespace EdwardHsu.CircuitBreaker.Fuses
                 Status = FuseStatus.Tripped;
 
                 _buffer.Clear();
+
+                throw new InvalidOperationException($"Fuse is tripped");
             }
         }
 

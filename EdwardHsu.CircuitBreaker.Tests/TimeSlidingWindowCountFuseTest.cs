@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using EdwardHsu.CircuitBreaker.Fuses;
+using EdwardHsu.CircuitBreaker.Internal;
 using EdwardHsu.CircuitBreaker.Tests.Models;
 using HarmonyLib;
 
@@ -25,9 +26,17 @@ namespace EdwardHsu.CircuitBreaker.Tests
             var startTime = DateTime.UtcNow;
             await Assert.ThrowsAsync<InvalidOperationException>(async() =>
             {
+                var _buffer = typeof(TimeSlidingWindowCountFuse).GetField("_buffer", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic);
+                var buffer = _buffer.GetValue(breaker.Fuse) as TtlBuffer<byte>;
+
                 foreach (var i in Enumerable.Range(0, 1000))
                 {
                     ExampleStaticMethod1();
+                    
+                    var bufferCount = buffer.GetItems().Count();
+
+                    Assert.Equal(i+1, bufferCount);
+
                     await Task.Delay(TimeSpan.FromMilliseconds(5));
                 }
             });

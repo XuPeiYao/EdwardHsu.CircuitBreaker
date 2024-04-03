@@ -70,7 +70,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
         [Fact]
         public void TimeWindowCount_StaticMethod2()
         {
-            using var fuse = new TimeWindowCountFuse(10, TimeSpan.FromSeconds(999999));
+            using var fuse = new TimeWindowCountFuse(10, TimeSpan.FromSeconds(1));
             using var breaker = new CircuitBreaker(fuse, () => ExampleStaticMethod2());
 
             var startTime = DateTime.UtcNow;
