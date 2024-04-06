@@ -8,6 +8,9 @@ namespace EdwardHsu.CircuitBreaker.HookInjector.Tests.Models
 {
     public class ExampleClass1
     {
+        public int IntValue;
+        public string StrValue { get; set; }
+
         public static void Method1_1()
         {
         }

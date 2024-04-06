@@ -239,8 +239,15 @@ namespace EdwardHsu.CircuitBreaker.HookInjector
             }
             else if (selector.Body is UnaryExpression ue)
             {
-                var (instance, method) = ParseExpression(ue.Operand as MethodCallExpression);
-                breaker.Inject(method, instance);
+                if (ue.Operand is MethodCallExpression mce2)
+                {
+                    var (instance, method) = ParseExpression(mce2);
+                    breaker.Inject(method, instance);
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"Invalid expression type {ue.Operand.NodeType}");
+                }
             }
             else
             {
@@ -263,8 +270,15 @@ namespace EdwardHsu.CircuitBreaker.HookInjector
             }
             else if (selector.Body is UnaryExpression ue)
             {
-                var (instance, method) = ParseExpression(ue.Operand as MethodCallExpression);
-                breaker.Uninject(method, instance);
+                if (ue.Operand is MethodCallExpression mce2)
+                {
+                    var (instance, method) = ParseExpression(mce2);
+                    breaker.Inject(method, instance);
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"Invalid expression type {ue.Operand.NodeType}");
+                }
             }
             else
             {

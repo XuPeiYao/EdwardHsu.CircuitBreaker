@@ -180,5 +180,63 @@ namespace EdwardHsu.CircuitBreaker.HookInjector.Tests
             Assert.Equal(CircuitBreakerStatus.On, breaker1.Status);
             Assert.Equal(CircuitBreakerStatus.On, breaker2.Status);
         }
+
+        [Fact]
+        public void GetInjectedMethods_1()
+        {
+            var instance1 = new ExampleClass2();
+            var fuse1 = new ExecutionLimitFuse(5);
+            var breaker1 = new CircuitBreaker(fuse1);
+            var fuse2 = new ExecutionLimitFuse(5);
+            var breaker2 = new CircuitBreaker(fuse2);
+
+            breaker1.Inject(() => instance1.ExampleMethod1());
+            breaker2.Inject(() => instance1.ExampleMethod1());
+
+            var methods1 = breaker1.GetInjectedMethods(()=>instance1.ExampleMethod1());
+            var methods2 = breaker2.GetInjectedMethods(()=>instance1.ExampleMethod1());
+
+            Assert.Equal(1, methods1.Count());
+            Assert.Equal(1, methods2.Count());
+        }
+
+        [Fact]
+        public void GetInjectedMethods_2()
+        {
+            var instance1 = new ExampleClass2();
+            var fuse1 = new ExecutionLimitFuse(5);
+            var breaker1 = new CircuitBreaker(fuse1);
+            var fuse2 = new ExecutionLimitFuse(5);
+            var breaker2 = new CircuitBreaker(fuse2);
+
+            breaker1.Inject(() => instance1.ExampleMethod2(Guid.Empty));
+            breaker2.Inject(() => instance1.ExampleMethod2(Guid.Empty));
+
+            var methods1 = breaker1.GetInjectedMethods(() => instance1.ExampleMethod2(Guid.Empty));
+            var methods2 = breaker2.GetInjectedMethods(() => instance1.ExampleMethod2(Guid.Empty));
+
+            Assert.Equal(1, methods1.Count());
+            Assert.Equal(1, methods2.Count());
+        }
+
+
+        [Fact]
+        public void InjectHookToNonSupportExpression()
+        {
+            var instance1 = new ExampleClass1();
+
+            var fuse = new ExecutionLimitFuse(5);
+            var breaker = new CircuitBreaker(fuse);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                breaker.Inject(() => instance1.IntValue);
+            });
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                breaker.Inject(() => instance1.StrValue);
+            });
+        }
     }
 }
