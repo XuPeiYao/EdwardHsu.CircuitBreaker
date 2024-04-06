@@ -7,23 +7,18 @@ using System.Threading.Tasks;
 namespace EdwardHsu.CircuitBreaker
 {
     /// <summary>
-    /// Circuit breaker status.
+    /// Fuse status.
     /// </summary>
-    public enum CircuitBreakerStatus
+    public enum FuseStatus
     {
         /// <summary>
-        /// The circuit breaker is on.
+        /// The fuse is normal.
         /// </summary>
-        On,
+        Normal,
 
         /// <summary>
-        /// The circuit breaker is tripped off.
+        /// The fuse is tripped.
         /// </summary>
-        TrippedOff,
-
-        /// <summary>
-        /// The circuit breaker is off.
-        /// </summary>
-        Off
+        Tripped,
     }
 }

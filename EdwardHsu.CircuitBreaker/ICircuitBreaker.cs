@@ -1,39 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EdwardHsu.CircuitBreaker
+﻿namespace EdwardHsu.CircuitBreaker
 {
     /// <summary>
-    /// Circuit breaker interface
+    /// Interface for circuit breaker.
     /// </summary>
     public interface ICircuitBreaker
     {
         /// <summary>
-        /// Circuit breaker fuse
+        /// Gets the fuse.
         /// </summary>
         IFuse Fuse { get; }
 
         /// <summary>
-        /// Circuit breaker status
+        /// Gets the status.
         /// </summary>
         CircuitBreakerStatus Status { get; }
 
         /// <summary>
-        /// Event for status changed
+        /// Occurs when status changed.
         /// </summary>
         event Action<ICircuitBreaker> StatusChanged;
 
         /// <summary>
-        /// Turn on the circuit breaker
+        /// Try to pass the circuit breaker.
+        /// </summary>
+        /// <param name="arguements">arguments</param>
+        void Execute(object[] arguements);
+
+        /// <summary>
+        /// Turn on the circuit breaker.
         /// </summary>
         void On();
 
         /// <summary>
-        /// Turn off the circuit breaker
+        /// Turn off the circuit breaker.
         /// </summary>
         void Off();
     }

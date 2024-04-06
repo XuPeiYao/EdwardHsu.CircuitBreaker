@@ -41,14 +41,25 @@ jobs:
           dotnet-version: 6.0.x
       - name: Restore packages
         run: dotnet restore
-      - name: Build
+      - name: Build Main Package
         run: dotnet build --configuration Release /p:Version=${VERSION} --no-restore
         working-directory: EdwardHsu.CircuitBreaker
+      - name: Build Injector Package
+        run: dotnet build --configuration Release /p:Version=${VERSION} --no-restore
+        working-directory: EdwardHsu.CircuitBreaker.HookInjector
       - name: Pack
         run: dotnet pack --configuration Release /p:Version=${VERSION} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg --no-build --output .
         working-directory: EdwardHsu.CircuitBreaker
-      - name: Publish package to NuGet.org
+      - name: Pack
+        run: dotnet pack --configuration Release /p:Version=${VERSION} /p:IncludeSymbols=true /p:SymbolPackageFormat=snupkg --no-build --output .
+        working-directory: EdwardHsu.CircuitBreaker.HookInjector
+      - name: Publish Main package to NuGet.org
         run: dotnet nuget push EdwardHsu.CircuitBreaker.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
         working-directory: EdwardHsu.CircuitBreaker
+        env:
+          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+      - name: Publish Injector package to NuGet.org
+        run: dotnet nuget push EdwardHsu.CircuitBreaker.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
+        working-directory: EdwardHsu.CircuitBreaker.HookInjector
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}

@@ -1,220 +1,140 @@
-﻿using HarmonyLib;
-
-using System.Globalization;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Security.Cryptography.X509Certificates;
-using EdwardHsu.CircuitBreaker.Fuses;
-using EdwardHsu.CircuitBreaker.Internal;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EdwardHsu.CircuitBreaker
 {
     /// <summary>
-    /// Circuit breaker
+    /// Circuit breaker.
     /// </summary>
-    public class CircuitBreaker : ICircuitBreaker, IDisposable , IAsyncDisposable
+    public class CircuitBreaker: ICircuitBreaker, IDisposable, IAsyncDisposable
     {
-        private readonly IFuse _fuse; 
+        private IFuse _fuse;
         private CircuitBreakerStatus _status;
-        private object _monitorObject;
-        private MethodInfo _monitorMethod;
-        private Harmony _harmony;
 
         /// <summary>
-        /// Constructor for CircuitBreaker
+        /// Initializes a new instance of the <see cref="CircuitBreaker"/> class.
         /// </summary>
-        /// <param name="fuse">Breaker fuse, which is the circuit breaker's internal state</param>
-        /// <param name="monitorMethodSelector">Expression selector for method to monitor</param>
-        /// <param name="initialStatus">Default status of the circuit breaker</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public CircuitBreaker(
-            IFuse fuse,
-            Expression<Action> monitorMethodSelector,
-            CircuitBreakerStatus initialStatus = CircuitBreakerStatus.On)
+        /// <param name="fuse">Fuse.</param>
+        public CircuitBreaker(IFuse fuse)
         {
+            _status = CircuitBreakerStatus.On;
             _fuse = fuse;
-            InitialFuseHook(initialStatus);
-
-            if (monitorMethodSelector.Body is MethodCallExpression mce)
-            {
-                MonitorObjectAndMethod(mce);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"Invalid expression type {monitorMethodSelector.Body.NodeType}");
-            }
-        }
-
-        /// <summary>
-        /// Constructor for CircuitBreaker
-        /// </summary>
-        /// <param name="fuse">Breaker fuse, which is the circuit breaker's internal state</param>
-        /// <param name="monitorMethodSelector">Expression selector for method to monitor</param>
-        /// <param name="initialStatus">Default status of the circuit breaker</param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public CircuitBreaker(
-            IFuse fuse,
-            Expression<Func<object>> monitorMethodSelector,
-            CircuitBreakerStatus initialStatus = CircuitBreakerStatus.On)
-        {
-            _fuse = fuse;
-            InitialFuseHook(initialStatus);
-
-            if (monitorMethodSelector.Body is MethodCallExpression mce)
-            {
-                MonitorObjectAndMethod(mce);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"Invalid expression type {monitorMethodSelector.Body.NodeType}");
-            }
-        }
-
-        private void InitialFuseHook(CircuitBreakerStatus initialStatus)
-        {
-            _fuse.StatusChanged += (f) =>
-            {
-                if (f.Status == FuseStatus.Tripped)
-                {
-                    _status = CircuitBreakerStatus.TrippedOff;
-                }
-                else if (f.Status == FuseStatus.ManuallyTripped)
-                {
-                    _status = CircuitBreakerStatus.Off;
-                }
-                else if (f.Status == FuseStatus.Initial ||
-                         f.Status == FuseStatus.Normal)
-                {
-                    _status = CircuitBreakerStatus.On;
-                }
-                
-                StatusChanged?.Invoke(this);
-            };
-
-            if (_status == CircuitBreakerStatus.On)
-            {
-                _fuse.Reset();
-            }
-            else
-            {
-                _fuse.Trip();
-            }
-        }
-
-        private void MonitorObjectAndMethod(MethodCallExpression mce)
-        {
-            _monitorMethod = mce.Method;
-
-            if (mce.Object is MemberExpression me)
-            {
-                var variableMemberInfo = me.Member;
-
-                var fieldInfo = variableMemberInfo as FieldInfo;
-
-                if (fieldInfo != null && me.Expression is ConstantExpression ce )
-                {
-                    _monitorObject = fieldInfo.GetValue(ce.Value);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"Invalid expression type {mce.Object.NodeType}");
-                }
-            }
-            else if(mce.Object is ConstantExpression ce)
-            {
-                _monitorObject = ce.Value;
-            }
-            else if(mce.Object is null) // static method
-            {
-                _monitorObject = null;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"Invalid expression type {mce.Object.NodeType}");
-            }
-
-            PatchFactory.Register(this, _monitorObject, _monitorMethod);
-
-            _harmony = new Harmony($"EdwardHsu.CircuitBreaker.{this.GetHashCode()}");
-
-            var prefix = typeof(PatchFactory).GetMethod(nameof(PatchFactory.Prefix), BindingFlags.Static | BindingFlags.Public);
-
-            var patchMethod = new HarmonyMethod(prefix);
-
-            _harmony.Patch(_monitorMethod, patchMethod);
+            _fuse.StatusChanged += OnFuseStatusChanged;
         }
         
         /// <summary>
-        /// Circuit breaker status
-        /// </summary>
-        public CircuitBreakerStatus Status => _status;
-        
-        /// <summary>
-        /// Circuit breaker fuse
+        /// Gets the fuse.
         /// </summary>
         public IFuse Fuse => _fuse;
 
-
         /// <summary>
-        /// Event for status changed
+        /// Gets the status.
         /// </summary>
-        public event Action<ICircuitBreaker> StatusChanged;
+        public CircuitBreakerStatus Status
+        {
+            get => _status;
+            private set
+            {
+                if (_status != value)
+                {
+                    _status = value;
+                    StatusChanged?.Invoke(this);
+                }
+            }
+        }
 
         /// <summary>
-        /// Turn on the circuit breaker
+        /// Occurs when status changed.
+        /// </summary>
+        public event Action<ICircuitBreaker>? StatusChanged;
+
+        private void OnFuseStatusChanged(IFuse fuse)
+        {
+            Status = fuse.Status switch
+            {
+                FuseStatus.Normal => CircuitBreakerStatus.On,
+                FuseStatus.Tripped => CircuitBreakerStatus.TrippedOff,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        /// <summary>
+        /// Try to pass the circuit breaker.
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        public void Execute(object[] arguments)
+        {
+            if (Status == CircuitBreakerStatus.Off)
+            {
+                throw new InvalidOperationException("CircuitBreaker is off.");
+            } 
+            else if (Status == CircuitBreakerStatus.TrippedOff)
+            {
+                throw new InvalidOperationException("CircuitBreaker is tripped off.");
+            }
+
+            if (_fuse.TryPass(arguments) == false)
+            {
+                throw new InvalidOperationException("CircuitBreaker is tripped off.");
+            }
+        }
+
+        /// <summary>
+        /// Turn on the circuit breaker.
         /// </summary>
         public void On()
         {
-            if (_status == CircuitBreakerStatus.On)
+            // If the circuit breaker is already on, do nothing
+            if (Status == CircuitBreakerStatus.On)
             {
                 return;
             }
 
             _fuse.Reset();
+            Status = CircuitBreakerStatus.On;
         }
 
         /// <summary>
-        /// Turn off the circuit breaker
+        /// Turn off the circuit breaker.
         /// </summary>
         public void Off()
         {
-            if (_status == CircuitBreakerStatus.Off ||
-                _status == CircuitBreakerStatus.TrippedOff)
-            {
-                return;
-            }
-
-            _fuse.Trip();
+            Status = CircuitBreakerStatus.Off;
         }
 
         /// <summary>
-        /// Dispose the circuit breaker
+        /// Dispose the circuit breaker.
         /// </summary>
         public void Dispose()
         {
-            if (_harmony != null)
+            if (_fuse is IDisposable disposable)
             {
-                _harmony.UnpatchAll();
-                _harmony = null;
+                disposable.Dispose();
             }
 
-            PatchFactory.Unregister(this);
+            _fuse = null;
         }
 
         /// <summary>
-        /// Dispose the circuit breaker
+        /// Dispose the circuit breaker.
         /// </summary>
         /// <returns></returns>
         public async ValueTask DisposeAsync()
         {
-            if (_harmony != null)
+            if (_fuse is IAsyncDisposable asyncDisposable)
             {
-                _harmony.UnpatchAll();
-                _harmony = null;
+                await asyncDisposable.DisposeAsync();
+            }
+            else if (_fuse is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
 
-            PatchFactory.Unregister(this);
+            _fuse = null;
         }
     }
 }

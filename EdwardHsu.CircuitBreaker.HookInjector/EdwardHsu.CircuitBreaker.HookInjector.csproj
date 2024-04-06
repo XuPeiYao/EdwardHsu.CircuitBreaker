@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -6,7 +6,6 @@
     <PackageProjectUrl>https://github.com/XuPeiYao/EdwardHsu.CircuitBreaker</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/XuPeiYao/EdwardHsu.CircuitBreaker</RepositoryUrl>
-    <Description>CircuitBreaker is a .NET library that provides a circuit breaker pattern implementation for methods. It is designed to prevent a method from being executed too frequently or too intensively, which can lead to resource exhaustion or other issues.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -20,10 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+  	<PackageReference Include="Lib.Harmony" Version="2.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EdwardHsu.CircuitBreaker\EdwardHsu.CircuitBreaker.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,5 +31,5 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
+  </ItemGroup>	
 </Project>

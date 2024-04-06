@@ -3,41 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EdwardHsu.CircuitBreaker.Fuses;
 
 namespace EdwardHsu.CircuitBreaker
 {
     /// <summary>
-    /// Fuse interface
+    /// Fuse is used to define the triggering conditions of a circuit breaker.
     /// </summary>
     public interface IFuse
     {
         /// <summary>
-        /// Fuse status
+        /// Gets the status.
         /// </summary>
         FuseStatus Status { get; }
 
         /// <summary>
-        /// Event for status changed
+        /// Occurs when status changed.
         /// </summary>
         event Action<IFuse> StatusChanged;
 
         /// <summary>
-        /// Invoke the fuse
+        /// Try to pass the fuse.
         /// </summary>
-        /// <param name="arguments">arguments</param>
-        void Invoke(object[] arguments);
+        /// <param name="arguments">arguments.</param>
+        /// <returns>Is passed.</returns>
+        bool TryPass(object[] arguments);
 
         /// <summary>
-        /// Trip the fuse
-        /// </summary>
-        void Trip();
-
-        /// <summary>
-        /// Reset the fuse
+        /// Reset the fuse.
         /// </summary>
         void Reset();
     }
-
-
 }

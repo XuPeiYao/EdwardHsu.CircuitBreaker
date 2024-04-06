@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EdwardHsu.CircuitBreaker\EdwardHsu.CircuitBreaker.csproj" />
+    <ProjectReference Include="..\EdwardHsu.CircuitBreaker.HookInjector\EdwardHsu.CircuitBreaker.HookInjector.csproj" />
   </ItemGroup>
 
 </Project>
