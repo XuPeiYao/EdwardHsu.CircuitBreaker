@@ -1,4 +1,5 @@
 using EdwardHsu.CircuitBreaker.Fuses;
+using EdwardHsu.CircuitBreaker.Tests.Models;
 
 namespace EdwardHsu.CircuitBreaker.Tests
 {
@@ -105,6 +106,50 @@ namespace EdwardHsu.CircuitBreaker.Tests
                 
                 Assert.Equal(CircuitBreakerStatus.On, breaker.Status);
             }
+        }
+
+        [Fact]
+        public void BreakTurnOff()
+        {
+            var fuse = new ExecutionLimitFuse(3);
+            using var breaker = new CircuitBreaker(fuse);
+
+            breaker.Execute(null);
+            
+            breaker.Off();
+            breaker.Off();
+
+            Assert.Equal(CircuitBreakerStatus.Off, breaker.Status);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                breaker.Execute(null);
+            });
+
+            breaker.On();
+            breaker.On();
+
+            Assert.Equal(CircuitBreakerStatus.On, breaker.Status);
+
+            breaker.Execute(null);
+        }
+
+        [Fact]
+        public void DisposeFuse()
+        {
+            var fuse = new DisposableFuse();
+            var breaker = new CircuitBreaker(fuse);
+
+            breaker.Dispose();
+        }
+
+        [Fact]
+        public async Task AsyncDisposeFuse()
+        {
+            var fuse = new DisposableFuse();
+            var breaker = new CircuitBreaker(fuse);
+
+            await breaker.DisposeAsync();
         }
     }
 }
