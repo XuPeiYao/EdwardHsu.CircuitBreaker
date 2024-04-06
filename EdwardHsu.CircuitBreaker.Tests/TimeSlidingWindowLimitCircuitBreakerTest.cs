@@ -120,7 +120,7 @@ namespace EdwardHsu.CircuitBreaker.Tests
                     breaker.Execute(null);
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(2));
 
                 for (int j = 0; j < i - 1; j++)
                 {

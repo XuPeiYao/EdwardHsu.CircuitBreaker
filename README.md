@@ -11,8 +11,8 @@ CircuitBreaker is a .NET library that provides a circuit breaker pattern impleme
 ## Features
 * Circuit Breaker: The CircuitBreaker class represents the circuit breaker and provides methods to control its state (on, tripped off, and off).
 * Fuse: The IFuse interface defines the triggering conditions of the circuit breaker. The library provides two implementations:
-	* ExecutionLimitFuse: Trips the circuit breaker when the number of executions exceeds a specified limit.
-	* TimeSlidingWindowLimitFuse: Trips the circuit breaker when the number of executions within a specified time window exceeds a limit.
+    * ExecutionLimitFuse: Trips the circuit breaker when the number of executions exceeds a specified limit.
+    * TimeSlidingWindowLimitFuse: Trips the circuit breaker when the number of executions within a specified time window exceeds a limit.
 * Injection: The CircuitBreakerHookInjector class allows you to inject the circuit breaker into existing methods without modifying the code.
 
 
