@@ -59,7 +59,7 @@ jobs:
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
       - name: Publish Injector package to NuGet.org
-        run: dotnet nuget push EdwardHsu.CircuitBreaker.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
+        run: dotnet nuget push EdwardHsu.CircuitBreaker.HookInjector.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
         working-directory: EdwardHsu.CircuitBreaker.HookInjector
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
